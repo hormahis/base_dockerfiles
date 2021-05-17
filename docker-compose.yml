@@ -1,0 +1,38 @@
+version: '3.4'
+
+services:
+  img_base_kafka_v1:
+    # NOTE:
+    #   base-image:1.1 -- same as base-image:1.0 with LXML included
+    image: srvseneca-dev:5000/base-image:1.1
+    build:
+      args:
+        buildver: v1
+      context: .
+      dockerfile: dockerfiles/Dockerfile_kafka_v1
+      labels:
+        ru.seneca.description: "Kafka-service base image"
+        ru.seneca.department: "IT-Integration"
+        ru.seneca.company: "Technopark LLC"
+        ru.seneca.image.base: "python:3.8-alpine"
+        ru.seneca.image.libs: "docstring,deepdiff,pydantic,rapidjson,redis,requests"
+        ru.seneca.image.pypi: "srvseneca:5050, pypi.python.org"
+        ru.seneca.image.workdir: "/app"
+
+  img_base_kafka_v2:
+    # NOTE:
+    #   base-image:1.2 -- python 3.9 + alpine to 3.13
+    image: srvseneca-dev:5000/base-image:1.2
+    build:
+      args:
+        buildver: v2
+      context: .
+      dockerfile: dockerfiles/Dockerfile_kafka_v2
+      labels:
+        ru.seneca.description: "Kafka-service base image"
+        ru.seneca.department: "IT-Integration"
+        ru.seneca.company: "Technopark LLC"
+        ru.seneca.image.base: "python:3.9-alpine3.13"
+        ru.seneca.image.libs: "docstring,deepdiff,pydantic,rapidjson,redis,requests,wheel"
+        ru.seneca.image.pypi: "srvseneca:5050, pypi.python.org"
+        ru.seneca.image.workdir: "/app"

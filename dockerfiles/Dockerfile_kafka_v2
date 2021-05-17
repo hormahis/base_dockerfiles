@@ -1,0 +1,47 @@
+# Base dependencies
+FROM python:3.9-alpine3.13 AS dependencies
+
+ARG buildver
+
+# build deps
+RUN apk update && \
+    apk add --virtual build-deps gcc g++ musl-dev libxml2-dev libxslt-dev
+
+# pip & venv
+ENV VENV=/opt/venv
+RUN python -m venv $VENV
+ENV PATH="$VENV/bin:$PATH"
+
+# basic dependencies
+COPY "dockerfiles/requirements_$buildver.in" ./requirements.in
+RUN pip install --upgrade pip && \
+    pip install pip-tools && \
+    pip-compile requirements.in > requirements.txt && \
+    pip-sync && \
+    pip install -r requirements.txt
+
+# the resulting image
+FROM python:3.9-alpine3.13
+
+RUN apk update && \
+    apk add --no-cache tzdata vim && \
+    apk add libstdc++
+
+# Python virtual env with pre-installed packages
+COPY --from=dependencies /opt/venv /opt/venv
+# XML related dependencies
+COPY --from=dependencies /usr/lib/libexslt.so.* /usr/lib/
+COPY --from=dependencies /usr/lib/libxslt.so.* /usr/lib/
+COPY --from=dependencies /usr/lib/libxml2.so.* /usr/lib/
+COPY --from=dependencies /usr/lib/libgcrypt.so.* /usr/lib/
+COPY --from=dependencies /usr/lib/libgpg-error.so.* /usr/lib/
+
+# environments
+ENV TZ=Europe/Moscow
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONBUFFERED 1
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Workdir and basics
+COPY pip.conf /etc/
+WORKDIR /app
